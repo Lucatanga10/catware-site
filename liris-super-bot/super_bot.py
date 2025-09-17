@@ -13,6 +13,15 @@ import random
 import io
 import html
 
+import sys
+import types
+# Safe stub for audioop on Python 3.13 where stdlib audioop is removed.
+# discord.py may import audio-related modules even if voice is unused.
+try:
+    import audioop  # type: ignore
+except Exception:
+    sys.modules['audioop'] = types.ModuleType('audioop')
+
 import discord
 from discord import app_commands
 from discord.ext import commands
