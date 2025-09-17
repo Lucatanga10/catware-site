@@ -33,7 +33,7 @@ except Exception:
 
 # ---------- Config ----------
 load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN", "")
+TOKEN = os.getenv("MTQxNzQ5NTk0MDQxMTE2NjgzMQ.GN2wpq.stHSVsNoPs6cf3J1O875NLpCeDbhDZbgcg9kqc", "")
 GUILD_ID: int | None = 1416381671883669640  # or None for global sync
 GREEN = 0x23A55A
 # Hosting config: bind to env HOST/PORT for PaaS (e.g., Render). Default to 0.0.0.0:8080
