@@ -33,7 +33,8 @@ except Exception:
 
 # ---------- Config ----------
 load_dotenv()
-TOKEN = os.getenv("MTQxNzE4MjE0NDMxMjM4MTQ0MA.GpYZGX.s_ExQdiIqCevxJbXbNlxiQiDmva9fyl72iG5uc", "")
+# Read Discord bot token from environment variable DISCORD_TOKEN
+TOKEN = os.getenv("DISCORD_TOKEN", "")
 GUILD_ID: int | None = 1416381671883669640  # or None for global sync
 GREEN = 0x23A55A
 # Hosting config: bind to env HOST/PORT for PaaS (e.g., Render). Default to 0.0.0.0:8080
@@ -45,6 +46,9 @@ except ValueError:
 # Optional public URL override (e.g., https://your-domain.com); otherwise computed per-request
 SITE_PUBLIC_URL = os.getenv("SITE_PUBLIC_URL", "").strip()
 SITE_URL = f"http://{SITE_HOST}:{SITE_PORT}"
+# If a public URL is provided (Render custom domain or onrender URL), prefer it everywhere
+if SITE_PUBLIC_URL:
+    SITE_URL = SITE_PUBLIC_URL
 SERVE_SITE = True  # se True, ospita ./site come sito statico
 
 # ---------- Bot ----------
@@ -929,7 +933,24 @@ async def setup_hook():  # type: ignore[override]
     else:
         await bot.tree.sync()
 
+async def _run_site_only():
+    if SERVE_SITE and web is not None:
+        await start_site_server()
+        print("[super-bot] Avvio solo sito (senza Discord bot). URL:", SITE_URL)
+        # Rimani in esecuzione
+        await asyncio.Event().wait()
+    else:
+        print("[super-bot] Web server disabilitato o aiohttp non disponibile.")
+
 if __name__ == "__main__":
     if not TOKEN:
-        raise RuntimeError("DISCORD_TOKEN non impostato. Aggiungilo all'ambiente.")
-    bot.run(TOKEN)
+        # Avvia comunque il sito senza bot
+        print("[super-bot] DISCORD_TOKEN mancante: avvio solo il sito…")
+        asyncio.run(_run_site_only())
+    else:
+        try:
+            bot.run(TOKEN)
+        except Exception as e:
+            # Se il login fallisce (token errato), continua con il solo sito
+            print(f"[super-bot] Login bot fallito ({e}). Avvio solo il sito…")
+            asyncio.run(_run_site_only())
